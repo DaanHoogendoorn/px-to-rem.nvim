@@ -39,6 +39,54 @@ M.setup = function(options)
 		end
 	end
 
+	vim.api.nvim_create_user_command("PxToRemSetRootFontSize", function()
+		local old_root_font_size = M.options.root_font_size
+
+		local input = tonumber(vim.fn.input("Root font size: ", M.options.root_font_size))
+		if input == nil then
+			input = old_root_font_size
+		end
+
+		M.options.root_font_size = input
+		vim.notify(
+			"Root font size changed from " .. old_root_font_size .. " to " .. M.options.root_font_size,
+			vim.log.levels.INFO
+		)
+	end, { desc = "Set the root font size" })
+
+	vim.api.nvim_create_user_command("PxToRemSetDecimals", function()
+		local old_max_decimals = M.options.max_decimals
+
+		local input = tonumber(vim.fn.input("Max decimals: ", M.options.max_decimals))
+		if input == nil then
+			input = old_max_decimals
+		end
+
+		M.options.max_decimals = input
+
+		vim.notify(
+			"Max decimals changed from " .. old_max_decimals .. " to " .. M.options.max_decimals,
+			vim.log.levels.INFO
+		)
+	end, { desc = "Set the maximum number of decimals" })
+
+	vim.api.nvim_create_user_command(
+		"PxToRemConvertAtCursor",
+		M.convert_at_cursor,
+		{ desc = "Convert the value at the cursor" }
+	)
+	vim.api.nvim_create_user_command(
+		"PxToRemConvertAtLine",
+		M.convert_at_line,
+		{ desc = "Convert the values in the current line" }
+	)
+	vim.api.nvim_create_user_command(
+		"PxToRemConvertBuffer",
+		M.convert_at_buffer,
+		{ desc = "Convert all px values in the current buffer" }
+	)
+
+	return M.options
 end
 
 ---Converts a px value to rem
@@ -77,4 +125,109 @@ M.convert_to_string = function(value, unit)
 		return M.convert_to_px(value) .. "px"
 	end
 end
+
+---Converts the value at the cursor
+M.convert_at_cursor = function()
+	local input = vim.fn.expand("<cWORD>")
+	local value = string.match(input, "%d+%.?%d*")
+	local unit = string.match(input, "%a+")
+	local rest_of_string = input.sub(input, string.len(value .. unit) + 1)
+
+	local original_cursor = vim.api.nvim_win_get_cursor(0)
+
+	if value == nil then
+		vim.notify("No px or rem value found", vim.log.levels.INFO)
+		return
+	end
+
+	if unit == nil then
+		unit = "px"
+	end
+
+	value = tonumber(value)
+
+	if value == nil then
+		vim.notify("Invalid number", vim.log.levels.INFO)
+		return
+	end
+
+	local target_unit = unit == "px" and "rem" or "px"
+
+	local converted_value = M.convert_to_string(value, target_unit)
+	vim.notify(converted_value, vim.log.levels.INFO)
+
+	if converted_value == nil then
+		vim.notify("Invalid unit", vim.log.levels.INFO)
+		return
+	end
+
+	-- add rest of the original string if it's missing
+	if rest_of_string ~= "" and rest_of_string ~= nil then
+		converted_value = converted_value .. rest_of_string
+	end
+
+	vim.cmd("normal! ciW" .. converted_value)
+
+	vim.api.nvim_win_set_cursor(0, original_cursor)
+end
+
+---Converts the values in the current line
+---@param line number|nil - The line number to convert. If nil, the current line is used.
+M.convert_line = function(line)
+	line = line or vim.api.nvim_win_get_cursor(0)[1]
+	local line_content = vim.api.nvim_buf_get_lines(0, line - 1, line, false)[1]
+	local modified = false
+
+	for match in line_content:gmatch("(-?%d+%.?%d*)px") do
+		local value = tonumber(match)
+
+		if value == nil then
+			return
+		end
+
+		local converted_value = M.convert_to_string(value, "rem")
+
+		if converted_value == nil then
+			return
+		end
+
+		line_content = line_content:gsub(match .. "px", converted_value, 1)
+		modified = true
+	end
+
+	if not modified then
+		return nil
+	end
+
+	return line_content
+end
+
+M.convert_at_line = function()
+	local line = vim.api.nvim_win_get_cursor(0)[1]
+	local new_line_content = M.convert_line(line)
+	vim.api.nvim_buf_set_lines(0, line - 1, line, false, { new_line_content })
+end
+
+M.convert_at_buffer = function()
+	M.convert_buffer()
+end
+
+---Converts all px values in the current buffer
+---@param bufnr number|nil - The buffer number to convert. If nil, the current buffer is used.
+M.convert_buffer = function(bufnr)
+	bufnr = bufnr or vim.api.nvim_get_current_buf()
+	local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+
+	for line_number, line_content in ipairs(lines) do
+		local converted_line = M.convert_line(line_number)
+		if converted_line ~= nil then
+			lines[line_number] = converted_line
+		end
+	end
+
+	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+
+	vim.notify("Buffer converted", vim.log.levels.INFO)
+end
+
 return M
