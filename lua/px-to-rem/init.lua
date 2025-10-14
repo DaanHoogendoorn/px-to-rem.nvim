@@ -12,6 +12,7 @@ M.options = {
 		"sass",
 		"less",
 	},
+	notify = true,
 	integrations = {
 		vscode_cipchk_cssrem = false,
 	},
@@ -48,10 +49,12 @@ M.setup = function(options)
 		end
 
 		M.options.root_font_size = input
-		vim.notify(
-			"Root font size changed from " .. old_root_font_size .. " to " .. M.options.root_font_size,
-			vim.log.levels.INFO
-		)
+		if M.options.notify then
+			vim.notify(
+				"Root font size changed from " .. old_root_font_size .. " to " .. M.options.root_font_size,
+				vim.log.levels.INFO
+			)
+		end
 	end, { desc = "Set the root font size" })
 
 	vim.api.nvim_create_user_command("PxToRemSetDecimals", function()
@@ -64,10 +67,12 @@ M.setup = function(options)
 
 		M.options.max_decimals = input
 
-		vim.notify(
-			"Max decimals changed from " .. old_max_decimals .. " to " .. M.options.max_decimals,
-			vim.log.levels.INFO
-		)
+		if M.options.notify then
+			vim.notify(
+				"Max decimals changed from " .. old_max_decimals .. " to " .. M.options.max_decimals,
+				vim.log.levels.INFO
+			)
+		end
 	end, { desc = "Set the maximum number of decimals" })
 
 	vim.api.nvim_create_user_command(
@@ -136,7 +141,9 @@ M.convert_at_cursor = function()
 	local original_cursor = vim.api.nvim_win_get_cursor(0)
 
 	if value == nil then
-		vim.notify("No px or rem value found", vim.log.levels.INFO)
+		if M.options.notify then
+			vim.notify("No px or rem value found", vim.log.levels.INFO)
+		end
 		return
 	end
 
@@ -147,7 +154,9 @@ M.convert_at_cursor = function()
 	value = tonumber(value)
 
 	if value == nil then
-		vim.notify("Invalid number", vim.log.levels.INFO)
+		if M.options.notify then
+			vim.notify("Invalid number", vim.log.levels.INFO)
+		end
 		return
 	end
 
@@ -157,7 +166,9 @@ M.convert_at_cursor = function()
 	vim.notify(converted_value, vim.log.levels.INFO)
 
 	if converted_value == nil then
-		vim.notify("Invalid unit", vim.log.levels.INFO)
+		if M.options.notify then
+			vim.notify("Invalid unit", vim.log.levels.INFO)
+		end
 		return
 	end
 
@@ -227,7 +238,9 @@ M.convert_buffer = function(bufnr)
 
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
 
-	vim.notify("Buffer converted", vim.log.levels.INFO)
+	if M.options.notify then
+		vim.notify("Buffer converted", vim.log.levels.INFO)
+	end
 end
 
 return M
