@@ -55,7 +55,6 @@ function source:get_completions(ctx, callback)
 	local completion_item = {
 		label = string.format("%gpx   %grem", px_value, rem_value),
 		kind = require("blink.cmp.types").CompletionItemKind.Value,
-		-- insertText = rem_value .. "rem",
 		textEdit = {
 			newText = rem_value .. "rem",
 			replace = {
