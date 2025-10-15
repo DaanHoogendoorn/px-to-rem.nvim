@@ -50,12 +50,7 @@ local lazy_setup = function()
 		end
 
 		M.options.root_font_size = input
-		if M.options.notify then
-			vim.notify(
-				"Root font size changed from " .. old_root_font_size .. " to " .. M.options.root_font_size,
-				vim.log.levels.INFO
-			)
-		end
+		M.notify("Root font size changed from " .. old_root_font_size .. " to " .. M.options.root_font_size)
 	end, { desc = "Set the root font size" })
 
 	vim.api.nvim_create_user_command("PxToRemSetDecimals", function()
@@ -68,12 +63,7 @@ local lazy_setup = function()
 
 		M.options.max_decimals = input
 
-		if M.options.notify then
-			vim.notify(
-				"Max decimals changed from " .. old_max_decimals .. " to " .. M.options.max_decimals,
-				vim.log.levels.INFO
-			)
-		end
+		M.notify("Max decimals changed from " .. old_max_decimals .. " to " .. M.options.max_decimals)
 	end, { desc = "Set the maximum number of decimals" })
 
 	vim.api.nvim_create_user_command(
@@ -160,9 +150,7 @@ M.convert_at_cursor = function()
 	local original_cursor = vim.api.nvim_win_get_cursor(0)
 
 	if value == nil then
-		if M.options.notify then
-			vim.notify("No px or rem value found", vim.log.levels.INFO)
-		end
+		M.notify("No px or rem value found")
 		return
 	end
 
@@ -173,21 +161,16 @@ M.convert_at_cursor = function()
 	value = tonumber(value)
 
 	if value == nil then
-		if M.options.notify then
-			vim.notify("Invalid number", vim.log.levels.INFO)
-		end
+		M.notify("Invalid number")
 		return
 	end
 
 	local target_unit = unit == "px" and "rem" or "px"
 
 	local converted_value = M.convert_to_string(value, target_unit)
-	vim.notify(converted_value, vim.log.levels.INFO)
 
 	if converted_value == nil then
-		if M.options.notify then
-			vim.notify("Invalid unit", vim.log.levels.INFO)
-		end
+		M.notify("Invalid unit")
 		return
 	end
 
@@ -256,10 +239,16 @@ M.convert_buffer = function(bufnr)
 	end
 
 	vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, lines)
+end
 
-	if M.options.notify then
-		vim.notify("Buffer converted", vim.log.levels.INFO)
+M.notify = function(message)
+	if not M.options.notify then
+		return
 	end
+
+	vim.notify(message, vim.log.levels.INFO, {
+		title = "px-to-rem.nvim",
+	})
 end
 
 return M
