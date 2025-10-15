@@ -139,8 +139,8 @@ Simply start typing a number and the source will provide a suggestion for the va
 - `PxToRemConvertAtCursor`: Convert the number under the cursor to rem (can notify if there is an error)
 - `PxToRemConvertAtLine`: Convert the px values in the current line to rem
 - `PxToRemConvertBuffer`: Convert all px values in the current buffer to rem
-- `PxToRemSetRootFontSize`: Set the root font size
-- `PxToRemSetDecimals`: Set the maximum number of decimals to round to
+- `PxToRemSetRootFontSize`: Set the root font size (can notify on change)
+- `PxToRemSetDecimals`: Set the maximum number of decimals to round to (can notify on change)
 
 ## Integrations
 
