@@ -1,5 +1,8 @@
 local M = {}
 
+---@type boolean - Flag to ensure setup() only runs once
+local initialized = false
+
 local utils = require("px-to-rem.utils")
 
 ---@type PxToRemConfig
@@ -18,12 +21,10 @@ M.options = {
 	},
 }
 
----Setup the plugin
----@param options PxToRemConfig|nil
-M.setup = function(options)
-	options = options or {}
-
-	M.options = vim.tbl_deep_extend("force", M.options, options)
+local lazy_setup = function()
+	if initialized then
+		return
+	end
 
 	-- Sets up the integration with the cssrem extension for VSCode
 	if M.options.integrations.vscode_cipchk_cssrem then
@@ -90,6 +91,24 @@ M.setup = function(options)
 		M.convert_at_buffer,
 		{ desc = "Convert all px values in the current buffer" }
 	)
+
+	initialized = true
+end
+
+---Setup the plugin
+---@param options PxToRemConfig|nil
+M.setup = function(options)
+	options = options or {}
+
+	M.options = vim.tbl_deep_extend("force", M.options, options)
+
+	for _, ft in ipairs(M.options.filetypes) do
+		vim.api.nvim_create_autocmd("FileType", {
+			pattern = ft,
+			callback = lazy_setup,
+			once = true,
+		})
+	end
 
 	return M.options
 end
