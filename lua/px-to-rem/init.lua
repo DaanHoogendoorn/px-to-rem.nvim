@@ -1,6 +1,6 @@
 local M = {}
 
----@type boolean - Flag to ensure setup() only runs once
+---@type boolean - Flag to ensure lazy_setup() only runs once
 local initialized = false
 
 local utils = require("px-to-rem.utils")
