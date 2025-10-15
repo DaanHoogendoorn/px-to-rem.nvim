@@ -9,7 +9,7 @@ local is_px_value = function(value)
 		return false
 	end
 
-	return string.match(value, "^%d+%.?%d*[pP]?[xX]?$") ~= nil
+	return string.match(value, "^%d*%.?%d*[pP]?[xX]?$") ~= nil
 end
 
 --- @module 'blink.cmp'

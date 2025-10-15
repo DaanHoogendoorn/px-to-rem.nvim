@@ -134,7 +134,7 @@ end
 ---Converts the value at the cursor
 M.convert_at_cursor = function()
 	local input = vim.fn.expand("<cWORD>")
-	local value = string.match(input, "%d+%.?%d*")
+	local value = string.match(input, "%d*%.?%d*")
 	local unit = string.match(input, "%a+")
 	local rest_of_string = input.sub(input, string.len(value .. unit) + 1)
 
