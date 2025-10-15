@@ -2,6 +2,8 @@
 
 A simple Neovim plugin to convert px to rem, with a source for the fantastic [blink.cmp](https://github.com/saghen/blink.cmp) completion plugin.
 
+I made this purely for my own use, but feel free to use it in your own config. PRs are welcome!
+
 ## Installation
 
 Using [lazy.nvim](https://github.com/folke/lazy.nvim):
